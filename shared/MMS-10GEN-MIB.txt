@@ -1,0 +1,206 @@
+--  -*- mode:snmp -*-
+
+MMS-10GEN-MIB DEFINITIONS ::= BEGIN
+
+--======================================================================
+-- MIB for MMS 1.0.x
+-- For more information, please see http://mms.10gen.com/help/
+--======================================================================
+
+IMPORTS
+   OBJECT-TYPE, enterprises, Counter, Gauge, IpAddress, TimeTicks
+      FROM RFC1155-SMI
+   DisplayString
+      FROM RFC1213-MIB;
+
+--
+-- mms
+--   server 1
+--     serverMIBObjects 1,1
+--        mmsAlertObject 1,1,1
+--        mmsHeartbeatObject 1,1,2
+--     serverMIBNotifications 1,2
+--        mmsAlert 1,2,1
+--        mmsHeartbeat 1,2,2
+
+mms OBJECT IDENTIFIER ::= { enterprises 41138 }
+
+server 
+        OBJECT IDENTIFIER ::= { mms 1 }
+
+serverMIBObjects
+        OBJECT IDENTIFIER ::= { server 1 }
+
+serverMIBNotifications
+        OBJECT IDENTIFIER ::= { server 2 }
+
+mmsAlertObject OBJECT IDENTIFIER ::= { serverMIBObjects 1 }
+mmsHeartbeatObject OBJECT IDENTIFIER ::= { serverMIBObjects 2 }
+
+mmsAlertId OBJECT-TYPE
+    SYNTAX  DisplayString (SIZE (0.. 64))
+    MAX-ACCESS not-accessible
+    STATUS  current
+    DESCRIPTION
+        "The alert indentification"
+    ::= {mmsAlertObject 1}
+
+mmsAlertGroupName OBJECT-TYPE
+    SYNTAX DisplayString (SIZE (0.. 256))
+    MAX-ACCESS  not-accessible
+    STATUS  current
+    DESCRIPTION
+         "The MMS group name from where the alert occurred"
+    ::= {mmsAlertObject 2}
+
+mmsAlertHostId OBJECT-TYPE
+    SYNTAX DisplayString (SIZE (0.. 64))
+    MAX-ACCESS  not-accessible
+    STATUS  current
+    DESCRIPTION
+         "The MMS Host ID of the affected host"
+    ::= {mmsAlertObject 3}
+
+mmsAlertHostAndPort OBJECT-TYPE
+    SYNTAX DisplayString (SIZE (0.. 256))
+    MAX-ACCESS  not-accessible
+    STATUS  current
+    DESCRIPTION
+         "The hostname:port of affected host"
+    ::= {mmsAlertObject 4}
+
+mmsAlertStatus OBJECT-TYPE
+    SYNTAX INTEGER
+    {
+        new (1),
+        reminder (2),
+        clear (3)
+    }
+    MAX-ACCESS not-accessible
+    STATUS  current
+    DESCRIPTION
+        "Is this alert new, a reminder of an existing alert, or clearing (closing) an existing alert"
+    ::= {mmsAlertObject 5}
+
+mmsAlertUrl OBJECT-TYPE
+    SYNTAX DisplayString (SIZE (0.. 256))
+    MAX-ACCESS not-accessible
+    STATUS  current
+    DESCRIPTION
+        "The url of the corresponding MMS alerts list page"
+    ::= {mmsAlertObject 6}
+
+mmsAlertMetricName OBJECT-TYPE
+    SYNTAX DisplayString (SIZE (0.. 128))
+    MAX-ACCESS not-accessible
+    STATUS  current
+    DESCRIPTION
+        "The name of the triggering alert metric"
+    ::= {mmsAlertObject 7}
+
+-- Note that MIB does not provide a floating point type. Representing float as string.
+mmsAlertMetricThreshold OBJECT-TYPE
+    SYNTAX DisplayString (SIZE (0.. 16))
+    MAX-ACCESS not-accessible
+    STATUS  current
+    DESCRIPTION
+        "The threshold set on the metric"
+    ::= {mmsAlertObject 8}
+
+-- Note that MIB does not provide a floating point type. Representing float as string.
+mmsAlertMetricValue OBJECT-TYPE
+    SYNTAX DisplayString (SIZE (0.. 16))
+    MAX-ACCESS not-accessible
+    STATUS  current
+    DESCRIPTION
+        "The observed value of the metric which caused the alert to be triggered"
+    ::= {mmsAlertObject 9}
+
+mmsAlertReplSetName OBJECT-TYPE
+    SYNTAX DisplayString (SIZE (0.. 64))
+    MAX-ACCESS  not-accessible
+    STATUS  current
+    DESCRIPTION
+         "The Replica Set name (if applicable) to which this affected host belongs"
+    ::= {mmsAlertObject 10}
+
+mmsAlertSeverity OBJECT-TYPE
+    SYNTAX INTEGER
+    {
+        debug (1),
+        info (2),
+        warning (3),
+        error (4),
+        critical (5)
+    }
+    MAX-ACCESS not-accessible
+    STATUS  current
+    DESCRIPTION
+        "The severity of this alert, set automatically by MMS based on alert type"
+    ::= {mmsAlertObject 11}
+
+mmsAlertSummary OBJECT-TYPE
+    SYNTAX DisplayString (SIZE (0.. 256))
+    MAX-ACCESS  not-accessible
+    STATUS  current
+    DESCRIPTION
+         "Summary text description of the alert condition"
+    ::= {mmsAlertObject 12}
+
+
+mmsAlert NOTIFICATION-TYPE
+    OBJECTS {
+        mmsAlertId,
+        mmsAlertGroupName,
+        mmsAlertHostId,
+        mmsAlertHostAndPort,
+        mmsAlertStatus,
+        mmsAlertUrl,
+        mmsAlertMetricName,
+        mmsAlertMetricThreshold,
+        mmsAlertMetricValue,
+        mmsAlertReplSetName,
+        mmsAlertSeverity,
+        mmsAlertSummary
+    }
+    STATUS current
+    DESCRIPTION "On-Prem Monitoring alert"
+    ::= { serverMIBNotifications 1 }
+
+mmsHeartbeatHostnameId OBJECT-TYPE
+    SYNTAX DisplayString (SIZE (0.. 256))
+    MAX-ACCESS read-only
+    STATUS  current
+    DESCRIPTION
+         "Hostname and instance id of MMS server."
+    ::= {mmsHeartbeatObject 1 }
+
+mmsHeartbeatInterval OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Interval in seconds between successive heartbeat notifications."
+    ::= { mmsHeartbeatObject 2 }
+
+mmsHeartbeatMessage OBJECT-TYPE
+    SYNTAX DisplayString (SIZE (0.. 256))
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Text description of current MMS server health."
+    ::= { mmsHeartbeatObject 3 }
+
+mmsHeartbeat NOTIFICATION-TYPE
+    OBJECTS {
+        mmsHeartbeatHostnameId,
+        mmsHeartbeatInterval,
+        mmsHeartbeatMessage 
+    }
+    STATUS      current
+    DESCRIPTION
+        "MMS server heartbeat. Sent at configurable fixed interval up to max of once per minute."
+    ::= { serverMIBNotifications 2 }
+
+END
+
